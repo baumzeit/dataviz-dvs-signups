@@ -10,26 +10,38 @@ window.onload = function() {
 
 		data.forEach(entry => { 
 			const date = new Date(entry.date);
-			date.setHours(entry.hour);
 			entry.date = date;
 
 			delete entry.long;
 			delete entry.lat;
 			delete entry.date_with_hour;
-			delete entry.hour;
 
 			entry.data = parseFloat(entry.data)
 			entry.visualization = parseFloat(entry.visualization)
 			entry.society = parseFloat(entry.society)
 		});
 
-		const avgLine = {};
+		data.sort((a,b) => a.date - b.date )
 
-		progAvgData = data.reduce((prevAvg, curr, i) => { //////////////////////////////////////////
-			const newAvg = i === 0 ? +curr : (prevAvg[prevAvg.length - 1] + +curr) / prevAvg.length
-			prevAvg.push(newAvg)
-			return prevAvg;
-		}, [])
+		const groupedByDay = d3.nest()
+			.key(d => d.date)
+			.entries(data)
+
+		const meanCats = ['society', 'data', 'visualization'];
+
+		const statsByCats = meanCats => dayData => {
+			const values = dayData.values;
+			const result = { dateString: dayData.key, num: values.length }
+
+			const meanCatsData = meanCats.forEach(cat => {
+				const meanCatData = d3.mean(values, d => d[cat]);
+				Object.assign(result, { [cat]: meanCatData } );
+			});
+
+			return result;
+		}
+
+		const statsByDay = groupedByDay.map(statsByCats(meanCats))	
 
 		const xTickSize = 450;
 		const yTickSize = 1100;
@@ -45,33 +57,40 @@ window.onload = function() {
 			.attr('height', height + margin.top + margin.bottom)
 		
 		const xScale = d3.scaleTime()
-			.domain(d3.extent(data, d => d.date))
+			.domain(d3.extent(statsByDay, d => new Date(d.dateString)))
 			.range([margin.left, width - margin.right])
-	
+
+		const extentOfMeans = d3
+			.extent(statsByDay.reduce((list, entry) => {
+				return list.concat(meanCats.map(cat => entry[cat]));
+				}, [])
+			)
+
 		const yScale = d3.scaleLinear()
-			.domain([0, 5])
+			.domain(extentOfMeans)
 			.range([height - margin.bottom, margin.top])
 
 		const fillScale = d3.scaleOrdinal()
 			.domain(['data', 'visualization', 'society'])
 			.range(['#fcd88a', '#cf7c1c', '#93c464'])
 
-		Object.keys(data[0]).forEach(key => {
-			if (key !== 'date') {
+
+		statsByDay.forEach(day => {
+			meanCats.forEach(cat => {
 				const line = d3.line()
-					.x(d => xScale(d.date))
-					.y((d, i) => yScale())
-					.curve(d3.curveCardinal);
+					.x(d => xScale(new Date(d.dateString)))
+					.y(d => yScale(d[cat]))
 				svg
 					.append('path')
-					.attr('id', key + '-line')
-					.attr('d', line(data))
-					.attr('fill', fillScale(key))
-					.attr('stroke', fillScale(key))
-					.attr('stroke-width', 2)
+					.attr('id', cat + '-line')
+					.attr('d', line(statsByDay))
+					.attr('fill', 'none')
+					.attr('stroke', fillScale(cat))
+					.attr('stroke-width', 1)
 					.style('opacity', 0.3)
-			}
+			});
 		});
+		
 
 // 		const xAxis = d3.axisBottom()
 // 			.scale(xScale)
@@ -93,5 +112,16 @@ window.onload = function() {
 // 			.attr('id', 'yAxisG')
 // 			.attr('transform', `translate(${yTickSize}, 0)`)
 // 			.call(yAxis)
+
+		function generateAvgTrace(data, fn) {
+			
+			const trace = [];
+			data.reduce((sum, entry, i) => {
+				const newSum = sum + fn(entry);
+				trace.push(newSum / (i + 1));
+				return newSum;
+			}, 0)
+			return trace;
+		}
 	}
 }
