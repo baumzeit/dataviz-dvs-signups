@@ -17,16 +17,37 @@ a {
 
 .header {
   background: #fafafa;
-  padding: 0 1rem;
+  padding: 0 1.2rem;
 }
 .header h1 {
   color: #603;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  font-weight: lighter;
   letter-spacing: 0.05em;
+}
+
+main {
+  justify-self: center;
 }
 
 #dataviz {
   margin: 2rem 4rem 1rem 4rem;
+}
+
+#description {
+  position: absolute;
+  font-size: 12px;
+  width: 160px;
+  top: 340px;
+  left: 1190px;
+}
+
+#description ul {
+  padding-left: 20px;
+}
+
+#description li {
+  margin-top: 10px;
 }
 
 .footer {
@@ -50,6 +71,26 @@ a {
 }
 .tick text {
   fill: white;
+}
+
+.label {
+  fill: black;
+}
+
+.dailyMeanPoint {
+  pointer-events: none;
+}
+
+.legendBands line {
+  opacity: 0.15;
+  stroke: white;
+  transform: rotate(90deg) translate(-8px, 10px);
+}
+
+.legendTitle {
+  fill: white;
+  opacity: 0.8;
+  font-size: 14px;
 }
 
 .domain {

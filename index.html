@@ -6,17 +6,23 @@
     <link rel="stylesheet" type="text/css" href="./styles.css">
 </head>
 
-<!-- <script src="https://d3js.org/d3.v5.js"></script> -->
-<script type="text/javascript" src="./lib/d3.min.js"></script>
-<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script> -->
+<script src="https://d3js.org/d3.v5.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
 <script type="text/javascript" src="./d3script.js"></script>
 
 <body>
     <header class="header">
-        <h1 id="title">Data Visualization Society | Signups</h1>
+        <h1 id="title">Data Visualization Society | Signups and experience evaluation by 'data', 'visualization' and 'society' related skills</h1>
     </header>
     <main class="content">
         <div id="dataviz">
+        </div>
+        <div id="description">Upon signup for the Data Visualization Society people have been asked to self-evaluate their experience level on a scale from 1 (no experience) to 5 (master)
+            <ul>
+                <li><b>data</b>: average of the three scores in the "data" section of the survey (collection, cleaning, analysis)</li>
+                <li><b>visualization</b>: average of the three scores in the "visualization" section of the survey ("design", "storytelling", "building")</li>
+                <li><b>society</b>: average of the three scores in the "society" section of the survey ("leadership", "community", "management")</li>
+            </ul>
         </div>
     </main>    
     <footer class="footer">
