@@ -49,13 +49,13 @@ window.onload = function() {
 
 		// chart config
 
-		const xTickSize = 600
-		const yTickSize = 1050
+		const xTickSize = 500
+		const yTickSize = 1000
 		
-		const height = 600
+		const height = 550
 		const width = 1120
 
-		const margin = { top: 20, right: 120, bottom: 10, left: 30 }
+		const margin = { top: 80, right: 120, bottom: 10, left: 80 }
 		
 		const svg = d3.select('#dataviz')
 			.append('svg')
@@ -89,18 +89,21 @@ window.onload = function() {
 
 		const dailySignupsScaleWidth = d3.scaleLinear()
 			.domain(signupsExtent)
-			.range([2, 55])
+			.range([2, 50])
 
 
 		// data visualization
 
 		statsByDay.forEach((day, i) => {
+
+			const dayX = xScale(new Date(day.dateString))
+
 			svg
 				.append('rect')	// signup rate rect
-				.attr('class', 'dailySignups-' + i)
-				.attr('x', () => (xScale(new Date(day.dateString)) - dailySignupsScaleWidth(day.num)/2))
-				.attr('y', margin.bottom)
-				.attr('height', height)
+				.attr('class', `dailySignupsRect-${i}`)
+				.attr('x', dayX - dailySignupsScaleWidth(day.num)/2)
+				.attr('y', margin.top - 20)
+				.attr('height', xTickSize + 8)
 				.attr('width', dailySignupsScaleWidth(day.num))
 				.style('fill', 'white')
 				.style('opacity', 0.1)
@@ -109,33 +112,53 @@ window.onload = function() {
 
 			svg
 				.append('rect') // signup rate event area
-				.attr('class', 'dailySignups-hover')
-				.attr('x', () => (xScale(new Date(day.dateString)) - barWidth / 2))
-				.attr('y', margin.bottom)
+				.attr('class', 'dailySignupsRect-hover')
+				.attr('x', dayX - barWidth / 2)
+				.attr('y', margin.top - 20)
 				.attr('height', height)
 				.attr('width', barWidth)
 				.style('fill', 'transparent')
 				.on('mouseenter', () => {
-					d3.select(`.dailySignups-${i}`)
+					d3.select(`.dailySignupsRect-${i}`)
 						.transition()
 						.duration(30)
 						.style('opacity', 0.2)
+					d3.selectAll(`.dailyMeanText-${i}`)
+						.transition()
+						.duration(60)
+						.style('opacity', 1)
+
 				})
 				.on('mouseleave', () => {
-					d3.select(`.dailySignups-${i}`)
+					d3.selectAll(`.dailyMeanText-${i}`)
 						.transition()
-						.duration(10)
+						.duration(60)
+						.style('opacity', 0)
+					d3.select(`.dailySignupsRect-${i}`)
+						.transition()
+						.duration(30)
 						.style('opacity', 0.1)
-				})			
+				})	
+
+			// daily signups annotation
+
+			svg
+				.append('text')
+				.attr('class', 'dailySignupsText')
+				.attr('x', dayX)
+				.attr('y', margin.top - 28)
+				.text(day.num)
+				.style('fill', 'white')
+				.style('text-anchor', 'middle')		
 
 
-			meanCats.forEach((cat, i) => {
+			meanCats.forEach((cat, j) => {
 				const line = d3.line()
 					.x(d => xScale(new Date(d.dateString)))
 					.y(d => yScale(d[cat]))
 				svg
 					.append('path') // evaluation data lines
-					.attr('id', cat + '-line-' + i)
+					.attr('id', cat + '-line-' + j)
 					.attr('class', 'line')
 					.attr('d', line(statsByDay))
 					.attr('fill', 'none')
@@ -151,26 +174,53 @@ window.onload = function() {
 					.attr('stroke', 'transparent')
 					.attr('stroke-width', 15)
 					.on('mouseenter', function() {
-						d3.select(`#${cat}-line-${i}`)
+						d3.select(`#${cat}-line-${j}`)
 						.style('stroke-width', 6)
+						d3.selectAll(`.dailyMeanText-${cat}`)
+						.transition()
+						.duration(60)
+						.style('opacity', 1)
 					})
 					.on('mouseleave', function() {
-						d3.select(`#${cat}-line-${i}`)
+						d3.select(`#${cat}-line-${j}`)
 						.style('stroke-width', 2)
+						d3.selectAll(`.dailyMeanText-${cat}`)
+						.transition()
+						.duration(10)
+						.style('opacity', 0)
 					})
 
 				svg
 					.append('circle') // data points
 					.attr('class', 'dailyMeanPoint')
-					.attr('cx', xScale(new Date(day.dateString)))
+					.attr('cx', dayX)
 					.attr('cy', yScale(day[cat]))
 					.attr('r', 2)
 					.style('fill', 'white')
+
+
+				// daily mean annotation
+
+				const textFormat = d3.format('.2f')
+
+				svg
+					.append('text') // data points
+					.attr('class', `dailyMeanText dailyMeanText-${cat} dailyMeanText-${i}`)
+					.attr('x', dayX + 5)
+					.attr('y', yScale(day[cat]) + 15)
+					.text(textFormat(day[cat]))
+					.style('fill', d3.color(fillScale(cat)).brighter(5))
+					.style('opacity', 0)
+
 			})
 		})
 
+		d3.selectAll('text.dailyMeanText-visualization')
+			.attr('dx', -35)
+
 		d3.selectAll('path.line-hover').raise()
 		d3.selectAll('circle.dailyMeanPoint').raise()
+		d3.selectAll('text.dailyMeanText').raise()
 
 
 		// create axes
@@ -190,14 +240,39 @@ window.onload = function() {
 		svg
 			.append('g')
 			.attr('id', 'xAxisG')
-			.attr('transform', `translate(0, ${xTickSize + 10})`)
+			.attr('transform', `translate(0, ${margin.top + xTickSize - 15})`)
 			.call(xAxis)
 
 		svg
 			.append('g')
-			.attr('id', 'yAxisG')
-			.attr('transform', `translate(${yTickSize}, 0)`)
+			.attr('id', 'yAxisRightG')
+			.attr('transform', `translate(${margin.left + yTickSize - 35}, 0)`)
 			.call(yAxis)
+
+		svg
+			.append('g')
+			.attr('id', 'yAxisLeftG')
+			.attr('transform', `translate(${margin.left - 70}, 0)`)
+			.call(yAxis)
+
+		d3.selectAll('#yAxisLeftG .tick line').remove() // remove axis tick lines for second yAxis(already drawn)
+
+		d3.select('#yAxisLeftG') // yAxis title
+			.append('text')
+			.attr('class', 'axisTitle')
+			.text('score')
+			.attr('dx', -10)
+			.attr('dy', 60)
+			.style('fill', 'black')
+
+		svg
+			.append('text')
+			.attr('class', 'axisTitle')
+			.text('# signups')
+			.attr('dx', 50)
+			.attr('dy', 30)
+			.style('fill', 'black')
+
 
 
 		// create legends
@@ -205,7 +280,7 @@ window.onload = function() {
 		const legends = svg
 			.append('g')
 			.attr('id', 'legends')
-			.attr('transform', `translate(${width + 20},${margin.top + 5})`)
+			.attr('transform', `translate(${width + 10},${margin.top - 30})`)
 
 		const legendLines = d3.legendColor()
 			.title('daily average')
@@ -229,7 +304,7 @@ window.onload = function() {
 		legends
 			.append('g')
 			.attr('class', 'legendBands')
-			.attr('transform', `translate(0, 130)`)
+			.attr('transform', `translate(0, 110)`)
 			.call(legendBands)
 		
 		d3.select('.legendBands').select('.legendCells').attr('transform', 'translate(36, 27)')

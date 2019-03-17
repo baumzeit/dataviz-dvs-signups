@@ -6,7 +6,7 @@ html, body {
 body {
   min-width: min-content;
   font: 100% Helvetica, sans-serif;
-  background: #263940;
+  background: #2b4048;
   display: flex;
   flex-direction: column;
 }
@@ -31,14 +31,14 @@ main {
 }
 
 #dataviz {
-  margin: 2rem 4rem 1rem 4rem;
+  margin: 2rem 2rem 1rem 4rem;
 }
 
 #description {
   position: absolute;
   font-size: 12px;
-  width: 160px;
-  top: 340px;
+  width: 170px;
+  top: 330px;
   left: 1190px;
 }
 
@@ -75,10 +75,24 @@ main {
 
 .label {
   fill: black;
+  font-size: 0.9rem;
 }
 
 .dailyMeanPoint {
   pointer-events: none;
+}
+
+.dailyMeanText {
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.dailySignupsText {
+  font-size: 0.6rem;
+}
+
+.axisTitle {
+  font-size: 0.9rem;
 }
 
 .legendBands line {
