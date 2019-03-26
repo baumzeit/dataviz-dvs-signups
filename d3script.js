@@ -125,15 +125,16 @@ window.onload = function() {
 						.style('opacity', 0.2)
 					d3.selectAll(`.dailyMeanText-${i}`)
 						.transition()
-						.duration(60)
-						.style('opacity', 1)
+						.delay(50)
+						.duration(140)
+						.style('fill-opacity', 1)
 
 				})
 				.on('mouseleave', () => {
 					d3.selectAll(`.dailyMeanText-${i}`)
 						.transition()
 						.duration(60)
-						.style('opacity', 0)
+						.style('fill-opacity', 0)
 					d3.select(`.dailySignupsRect-${i}`)
 						.transition()
 						.duration(30)
@@ -147,18 +148,18 @@ window.onload = function() {
 				.attr('class', 'dailySignupsText')
 				.attr('x', dayX)
 				.attr('y', margin.top - 28)
+				.attr('text-anchor', 'middle')		
 				.text(day.num)
 				.style('fill', 'white')
-				.style('text-anchor', 'middle')		
 
 
-			meanCats.forEach((cat, j) => {
+			meanCats.forEach(cat => {
 				const line = d3.line()
 					.x(d => xScale(new Date(d.dateString)))
 					.y(d => yScale(d[cat]))
 				svg
-					.append('path') // evaluation data lines
-					.attr('id', cat + '-line-' + j)
+					.append('path') // graph lines
+					.attr('class', `${cat}-line`)
 					.attr('class', 'line')
 					.attr('d', line(statsByDay))
 					.attr('fill', 'none')
@@ -167,27 +168,29 @@ window.onload = function() {
 					.style('opacity', 0.2)
 
 				svg
-					.append('path') // evaluation data event area
+					.append('path') // graph lines event areas
 					.attr('class', 'line-hover')
 					.attr('d', line(statsByDay))
 					.attr('fill', 'none')
 					.attr('stroke', 'transparent')
 					.attr('stroke-width', 15)
 					.on('mouseenter', function() {
-						d3.select(`#${cat}-line-${j}`)
-						.style('stroke-width', 6)
-						d3.selectAll(`.dailyMeanText-${cat}`)
-						.transition()
-						.duration(60)
-						.style('opacity', 1)
+						d3.select(`.${cat}-line`)
+							.style('stroke-width', 6)
+
+						d3.selectAll(`.${cat}-dailyMeanText`)
+							.transition()
+							.delay(50)
+							.duration(140)
+							.style('fill-opacity', 1)
 					})
 					.on('mouseleave', function() {
-						d3.select(`#${cat}-line-${j}`)
+						d3.select(`.${cat}-line`)
 						.style('stroke-width', 2)
-						d3.selectAll(`.dailyMeanText-${cat}`)
+						d3.selectAll(`.${cat}-dailyMeanText`)
 						.transition()
 						.duration(10)
-						.style('opacity', 0)
+						.style('fill-opacity', 0)
 					})
 
 				svg
@@ -205,22 +208,21 @@ window.onload = function() {
 
 				svg
 					.append('text') // data points
-					.attr('class', `dailyMeanText dailyMeanText-${cat} dailyMeanText-${i}`)
+					.attr('class', `dailyMeanText ${cat}-dailyMeanText dailyMeanText-${i}`)
 					.attr('x', dayX + 5)
 					.attr('y', yScale(day[cat]) + 15)
 					.text(textFormat(day[cat]))
 					.style('fill', d3.color(fillScale(cat)).brighter(5))
-					.style('opacity', 0)
-
+					.style('fill-opacity', 0)
 			})
 		})
 
-		d3.selectAll('text.dailyMeanText-visualization')
+		d3.selectAll('.visualization-dailyMeanText')
 			.attr('dx', -35)
 
-		d3.selectAll('path.line-hover').raise()
-		d3.selectAll('circle.dailyMeanPoint').raise()
-		d3.selectAll('text.dailyMeanText').raise()
+		d3.selectAll('.line-hover').raise()
+		d3.selectAll('.dailyMeanPoint').raise()
+		d3.selectAll('.dailyMeanText').raise()
 
 
 		// create axes
